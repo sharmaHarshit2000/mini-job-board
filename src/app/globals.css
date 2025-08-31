@@ -1,26 +1,53 @@
 @import "tailwindcss";
 
+/* Light mode variables */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --border-color: #cccccc;
+  --tag-bg: #e0e0e0;
+  --tag-text: #000000;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Dark mode variables */
+html.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --border-color: #555555;
+  --tag-bg: #444444;
+  --tag-text: #f0f0f0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Apply colors globally */
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.job-item {
+  border: 1px solid var(--border-color);
+  background: var(--background);
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.tag {
+  display: inline-block;
+  margin-right: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+}
+
+input {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+  background: var(--background);
+  color: var(--foreground);
 }
