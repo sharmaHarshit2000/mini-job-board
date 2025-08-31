@@ -1,38 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jobs, Job } from "../../../../data/jobs";
+import { getJobs, addOrUpdateJob, Job } from "../../../data/jobs";
 
-let jobList = [...jobs];
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
-  const search = url.searchParams.get("search") || "";
-  const tag = url.searchParams.get("tag") || "";
+  const search = url.searchParams.get("search")?.toLowerCase() ?? "";
+  const limit = Math.max(1, Math.min(50, Number(url.searchParams.get("limit") ?? 10)));
+  const offset = Math.max(0, Number(url.searchParams.get("offset") ?? 0));
 
-  let filtered = jobList.filter(
-    (job) =>
-      job.title.toLowerCase().includes(search.toLowerCase()) &&
-      (tag ? job.tags.includes(tag) : true)
+  const filtered = getJobs().filter(j =>
+    !search ||
+    j.title.toLowerCase().includes(search) ||
+    j.company.toLowerCase().includes(search) ||
+    j.tags.some(t => t.toLowerCase().includes(search))
   );
 
-  return NextResponse.json(filtered);
+  const page = filtered.slice(offset, offset + limit);
+
+  return NextResponse.json({
+    total: filtered.length,
+    limit,
+    offset,
+    items: page,
+  });
 }
 
 export async function POST(req: NextRequest) {
-  const body: Job = await req.json();
+  const data = await req.json();
+  const errors: string[] = [];
 
-  if (!body.title || !body.company || !body.location) {
-    return NextResponse.json(
-      { error: "Missing required fields" },
-      { status: 400 }
-    );
+  if (!data.title) errors.push("title is required");
+  if (!data.company) errors.push("company is required");
+  if (!data.location) errors.push("location is required");
+  if (!Array.isArray(data.tags)) errors.push("tags must be an array");
+
+  if (errors.length) {
+    return NextResponse.json({ errors }, { status: 400 });
   }
 
-  const newJob = {
-    ...body,
-    id: (jobList.length + 1).toString(),
-    postedAt: new Date().toISOString(),
-  };
-  jobList.push(newJob);
-
-  return NextResponse.json(newJob);
+  const job = addOrUpdateJob(data as Partial<Job>);
+  return NextResponse.json(job, { status: 201 });
 }
